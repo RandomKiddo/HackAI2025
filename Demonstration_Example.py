@@ -4,6 +4,9 @@ import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
 
+model_file_path = 'MODEL NAME GOES HERE'
+csv_file_path = 'CSV FILE PATH GOES HERE'
+
 # Load the trained model
 model = tf.keras.models.load_model(
     'keypoint_model6.keras',
@@ -14,8 +17,7 @@ model = tf.keras.models.load_model(
 )
 
 # Load CSV for ground truth labels
-csv_path = "iss.csv"
-df = pd.read_csv(csv_path)
+df = pd.read_csv(csv_file_path)
 
 # Ensure (x, y) columns are parsed only once
 df["x"] = df["location"].apply(lambda xy: int(xy.strip("[]").split(",")[0]))
