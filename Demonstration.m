@@ -1,4 +1,4 @@
-gm = importGeometry('BlueTubeFinAlignment.stl');
+gm = importGeometry('ISS.stl');
 pdegplot(gm);
 hold on;
 x = [0, 10];
