@@ -1,2 +1,8 @@
 # MacOS
 *.DS_Store
+
+# Keras
+*.keras
+
+# PNG
+*.png
