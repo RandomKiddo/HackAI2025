@@ -123,10 +123,10 @@ line = pv.Line(
 # Add STL geometry
 plotter.add_mesh(iss_pv_mesh, color="lightblue", opacity=1)
 plotter.add_mesh(dragon_pv_mesh, color="white", opacity=0.9)
-plotter.add_mesh(line, color="lightgreen", opacity=1, line_width=3)
+plotter.add_mesh(line, color="lightgreen", opacity=1, line_width=2)
 plotter.show_axes()
 # plotter.show()
-# plotter.add_background_image('background.jpg')
+plotter.add_background_image('background.jpg')
 
 plotter.open_gif("test.gif")
 
@@ -161,8 +161,6 @@ camera_path1 = pv.Line(
     pointb = [issCoordinates[0]-60, 20, -36],
     resolution = 20
 )    
-
-print(camera_path1)
 
 # TO - DO: Convert orbit_on_path to a for loop that just goes along the points on a line using linspace along each axis
 # THEN, IF possible, create the rotation and docking animation
