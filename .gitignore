@@ -4,8 +4,8 @@
 # Keras
 *.keras
 
-# PNG
-*.png
-
 # Zip
 *.zip
+
+# Ignore Folder
+ignore/
