@@ -6,6 +6,7 @@ import kagglehub as kh
 import pandas as pd
 import tensorflow as tf
 import os
+import math
 
 # Function to create a rotation matrix
 def get_rotation_matrix(axis, degrees):
@@ -85,7 +86,7 @@ print(groundTruth)
 predictions[0] = predictions[0]/2.75
 predictions[1] = predictions[1]/32
 predictions[2] = predictions[2]/32
-print(predictions)
+print(predictions[1],predictions[2],predictions[0])
 
 # Create initial offsets, so that the docking port's of each spacecraft are centered at the origin
 issOffset = [-5.25, 1.19, -0.105]
@@ -122,7 +123,7 @@ line = pv.Line(
 
 # Add STL geometry
 plotter.add_mesh(iss_pv_mesh, color="lightblue", opacity=1)
-plotter.add_mesh(dragon_pv_mesh, color="white", opacity=0.9)
+dragonActor = plotter.add_mesh(dragon_pv_mesh, color="white", opacity=0.9)
 plotter.add_mesh(line, color="lightgreen", opacity=1, line_width=2)
 plotter.show_axes()
 # plotter.show()
@@ -138,10 +139,12 @@ view_up = [0, 1, 0]  # Keep the camera upright
 plotter.camera_position = [initial_camera_position, focal_point, view_up]
 # plotter.show(auto_close=False)  # Keep window open for animation
 
-for i in range(10):
+numFrames = 10
+for i in range(numFrames):
     plotter.write_frame()
 
-for i in range(24):
+numFrames = 24
+for i in range(numFrames):
     # Linear interpolation between initial and start of path
     if i<5:
         initial_camera_position[0] += 1
@@ -155,20 +158,46 @@ for i in range(24):
     plotter.camera_position = [initial_camera_position, focal_point, view_up]
     plotter.write_frame()
 
-# Create camera path
-camera_path1 = pv.Line(
-    pointa = initial_camera_position,
-    pointb = [issCoordinates[0]-60, 20, -36],
-    resolution = 20
-)    
+focal_point = [dragonCoordinates[0] - 3.15, dragonCoordinates[1], dragonCoordinates[2]]  # Look at the tip of the dragon shuttle
+numFrames = 30
+# Reference value
+ref = issCoordinates[0]/2
+# Vector for camera path in the x direction
+cameraPathx = np.linspace(initial_camera_position[0], ref, numFrames, endpoint = True)
+# Vector for camera path in the x direction
+cameraPathy = np.linspace(initial_camera_position[1], 20, numFrames, endpoint = True)
+# Vector for camera path in the x direction
+cameraPathz = np.linspace(initial_camera_position[2], ref, numFrames, endpoint = True)
 
-# TO - DO: Convert orbit_on_path to a for loop that just goes along the points on a line using linspace along each axis
-# THEN, IF possible, create the rotation and docking animation
+for i in range(numFrames):
+    initial_camera_position = [cameraPathx[i], cameraPathy[i], cameraPathz[i]]
 
-plotter.orbit_on_path(
-    camera_path1, 
-    write_frames = True, 
-    viewup = [0, 1, 0], 
-    # focus = issCoordinates, 
-    step=0.001
-)
+    plotter.camera_position = [initial_camera_position, focal_point, view_up]
+    plotter.write_frame()
+
+numFrames = 10
+for i in range(numFrames):
+    plotter.write_frame()
+
+numFrames = 30
+# Vector for camera path in the x direction
+cameraPathx = np.linspace(initial_camera_position[0], -1*predictions[0], numFrames, endpoint = False)
+# Vector for camera path in the x direction
+cameraPathy = np.linspace(initial_camera_position[1], -1*predictions[2], numFrames, endpoint = False)
+# Vector for camera path in the x direction
+cameraPathz = np.linspace(initial_camera_position[2], -1*predictions[1], numFrames, endpoint = False)
+focal_point = [-1*predictions[0], -1*predictions[2], -1*predictions[1]] 
+for i in range(numFrames):
+    focal_point = [cameraPathx[i], cameraPathy[i], cameraPathz[i]]
+    plotter.camera_position = [initial_camera_position, focal_point, view_up]
+    plotter.write_frame()
+for i in range(numFrames):
+    initial_camera_position = [cameraPathx[i], cameraPathy[i], cameraPathz[i]]
+    plotter.camera_position = [initial_camera_position, focal_point, view_up]
+    plotter.write_frame()
+
+numFrames = 10
+for i in range(numFrames):
+    plotter.write_frame()
+
+plotter.close()
