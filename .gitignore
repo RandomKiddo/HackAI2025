@@ -9,3 +9,7 @@
 
 # Ignore Folder
 ignore/
+
+# Pycache
+*/__pycache__/
+*.pyc
