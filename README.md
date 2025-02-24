@@ -3,7 +3,7 @@
 ![GitHub License](https://img.shields.io/github/license/RandomKiddo/HackAI2025)
 ![GitHub repo size](https://img.shields.io/github/repo-size/RandomKiddo/HackAI2025)
 
-:heavy_exclamation_mark: ***THIS REPO MAY HAVE BEEN CHANGED OR UPDATED SINCE THE ORIGINAL HACK AI VERSION*** :heavy_exclamation_mark:
+:heavy_exclamation_mark: ***THIS REPO MAY HAVE BEEN CHANGED OR UPDATED SINCE THE ORIGINAL HACK AI VERSION*** :heavy_exclamation_mark: <br>
 :heavy_exclamation_mark: ***SEE [THE HACK AI RELEASE](https://github.com/RandomKiddo/HackAI2025/releases/tag/hackai2025) FOR THAT VERSION*** :heavy_exclamation_mark:
 
 ___
