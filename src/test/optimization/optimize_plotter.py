@@ -1,3 +1,12 @@
+"""
+TEST FILE
+
+THIS FILE PLOTS THE RAM USAGE IN GIGABYTES PER STEP IN THE OPTIMIZE TEST FILE TAKING
+AVERAGES OVER 3 TRIALS. IT ALSO PLOTS THE BAR GRAPH OF THE TIME TO COMPLETE THE PROCESS.
+THIS VERSION CURRENTLY DISPLAYS THE TENSORFLOW DATASET VERSION, BUT THE INITIAL VERSION'S
+DATA IS STILL COMMENTED TO DISPLAY, IF DESIRED.
+"""
+
 import matplotlib.pyplot as plt
 
 #end = ''
@@ -46,7 +55,7 @@ plt.plot(x, y3, label='Iteration 3')
 plt.plot(x, y_avg, linestyle='dashed', label='Average')
 plt.xlabel('Step')
 plt.ylabel('RAM Usage (GB)')
-plt.title('Data Loading RAM Process Usage, Initial Version')
+plt.title('Data Loading RAM Process Usage, TF Dataset Version')
 plt.suptitle('2020 2.3 GHz 4-Core i7 | 32 GB DDR4 3733 MHz')
 plt.legend()
 plt.savefig(f'initial{end}.png')
@@ -56,7 +65,7 @@ x = ['Iteration 1', 'Iteration 2', 'Iteration 3', 'Average']
 plt.bar(x, t)
 plt.xlabel('Iteration')
 plt.ylabel('Time (s)')
-plt.title('Time for Data Loading Process, Initial Version')
+plt.title('Time for Data Loading Process, TF Dataset Version')
 plt.suptitle('2020 2.3 GHz 4-Core i7 | 32 GB DDR4 3733 MHz')
 plt.savefig(f'initial_t{end}.png')
 plt.show()
