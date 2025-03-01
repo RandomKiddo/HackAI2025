@@ -11,6 +11,10 @@ TENSORFLOW MIXED PRECISION POLICY, AND NOT USING THE CACHED DATASET TO
 SAVE RAM. 
 """
 
+# MODE DEFINES WHICH MODEL
+# 1 = HACKAI MODEL
+# 2 = HEATMAP MODEL
+MODE = 1
 
 import os
 import random
@@ -24,10 +28,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
+from models import *
+from functions import *
 
 policy = tf.keras.mixed_precision.Policy('mixed_float16')
 tf.keras.mixed_precision.set_global_policy(policy)
-
 
 gpus = tf.config.list_physical_devices('GPU')
 if gpus:
@@ -116,69 +121,46 @@ def create_dataset(paths, dists, locs):
     dataset = tf.data.Dataset.from_tensor_slices((paths, dists, locs))
     dataset = dataset.map(lambda i, d, xy: (as_image(i), {'distance': d, 'x': xy[0], 'y': xy[1]}), num_parallel_calls=tf.data.AUTOTUNE)
     dataset = dataset.batch(batch_size)
-    #dataset = dataset.cache()
+    #dataset = dataset.cache() # COMMENTED FOR RAM OPTIMIZATION
     dataset = dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
     return dataset
 
-train_dataset = create_dataset(train_image_paths_distances, train_distances, train_locations)
-val_dataset = create_dataset(val_image_paths_distances, val_distances, val_locations)
-test_dataset = create_dataset(test_image_paths_distances, test_distances, test_locations)
-
-class TestModel(tf.keras.Model):
-    def __init__(self):
-        super(TestModel, self).__init__()
-
-        self.net = tf.keras.applications.MobileNetV3Small(
-            input_shape=(img_height, img_width, 3),
-            include_top=False,
-            weights='imagenet'
-        )
-        self.net.trainable = False
-
-        self.flatten = tf.keras.layers.Flatten()
-        self.regression1 = tf.keras.layers.Dense(32, activation='relu')
-        self.regression2 = tf.keras.layers.Dense(16, activation='relu')
-
-        self.left_head1 = tf.keras.layers.Dense(8, activation='relu')
-        self.left_head2 = tf.keras.layers.Dense(1, activation='relu', name='distance')
-
-        self.middle_head1 = tf.keras.layers.Dense(8, activation='relu')
-        self.middle_head2 = tf.keras.layers.Dense(1, activation='relu', name='x')
-
-        self.right_head = tf.keras.layers.Dense(1, activation='relu', name='y')
-    
-    def call(self, inputs):
-        x = self.net(inputs)
-        x = self.flatten(x)
-        x = self.regression1(x)
-        x = self.regression2(x)
-
-        left_head = self.left_head1(x)
-        left_head = self.left_head2(left_head)
-
-        middle_head = self.middle_head1(x)
-        middle_head = self.middle_head2(middle_head)
-
-        right_head = self.right_head(x)
-
-        return left_head, middle_head, right_head
-
-model = TestModel()
-loss_object = tf.keras.losses.MeanAbsoluteError()
 optimizer = tf.keras.optimizers.Adam(1e-10)
 
-def lr_schedule(epoch):
-    return 1e-10 * 10**(epoch/10)
+if MODE == 1:
+    model = HackAIModel()
+    loss_object_dist = tf.keras.losses.MeanAbsoluteError()
+    loss_object_x = tf.keras.losses.MeanAbsoluteError()
+    loss_object_y = tf.keras.losses.MeanAbsoluteError()
+
+    train_dataset = create_dataset(train_image_paths_distances, train_distances, train_locations)
+    val_dataset = create_dataset(val_image_paths_distances, val_distances, val_locations)
+    test_dataset = create_dataset(test_image_paths_distances, test_distances, test_locations)
+elif MODE == 2:
+    model = HeatmapModel()
+    loss_object_dist = tf.keras.losses.MeanAbsoluteError()
+    loss_object_x = tf.keras.losses.CategoricalCrossentropy()
+    loss_object_y = tf.keras.losses.CategoricalCrossentropy()
+
+    train_x_heatmaps, train_y_heatmaps = convert_labels_to_heatmaps(train_locations[:, 0] * 512, train_locations[:, 1] * 512)
+    val_x_heatmaps, val_y_heatmaps = convert_labels_to_heatmaps(val_locations[:, 0] * 512, val_locations[:, 1] * 512)
+    test_x_heatmaps, test_y_heatmaps = convert_labels_to_heatmaps(test_locations[:, 0] * 512, test_locations[:, 1] * 512)
+
+    train_dataset = create_dataset(train_image_paths_distances, train_distances, (train_x_heatmaps, train_y_heatmaps))
+    val_dataset = create_dataset(val_image_paths_distances, val_distances, (val_x_heatmaps, val_y_heatmaps))
+    test_dataset = create_dataset(test_image_paths_distances, test_distances, (test_x_heatmaps, test_y_heatmaps))
+else:
+    raise ValueError('MODE value must be integer in range [0, 1].')
 
 @tf.function
-def train_step(model, optimizer, inputs, targets, loss_object):
+def train_step(model, optimizer, inputs, targets, loss_obj_dist, loss_obj_x, loss_obj_y):
     with tf.GradientTape() as tape:
         tape.watch(inputs)
 
         l, m, r = model(inputs)
-        loss = loss_object(targets['distance'], l)
-        loss += loss_object(targets['x'], m)
-        loss += loss_object(targets['y'], r)
+        loss = loss_obj_dist(targets['distance'], l)
+        loss += loss_obj_x(targets['x'], m)
+        loss += loss_obj_y(targets['y'], r)
 
     gradients = tape.gradient(loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
@@ -194,7 +176,7 @@ for epoch in range(100):
         inputs = j[0]
         targets = j[1]
 
-        loss = train_step(model, optimizer, inputs, targets, loss_object)
+        loss = train_step(model, optimizer, inputs, targets, loss_object_dist, loss_object_x, loss_object_y)
         total_loss += loss
 
         del inputs, targets, loss
@@ -208,5 +190,5 @@ plt.xscale('log')
 plt.xlabel('Learning Rate')
 plt.ylabel('Loss')
 plt.title('Learning Rate Finder')
-plt.savefig('lrfinder.png')
+plt.savefig(f'lrfinder{MODE}.png')
 plt.show()
