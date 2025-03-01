@@ -1,3 +1,9 @@
+"""
+TEST FILE
+
+THIS FILE HOLDS MODEL VERSION USED AS MODELS IN optimize_lr.py.
+"""
+
 import tensorflow as tf
 
 img_height = img_width = 512

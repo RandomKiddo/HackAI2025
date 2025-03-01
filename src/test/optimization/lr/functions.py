@@ -1,3 +1,9 @@
+"""
+TEST FILE
+
+THIS FILE HOLDS FUNCTIONS USED IN OPTIMIZING THE LEARNING RATE IN optimize_lr.py
+"""
+
 import numpy as np
 import scipy
 
