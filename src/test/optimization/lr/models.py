@@ -151,3 +151,33 @@ class DistanceHeadOnlyModelv1(tf.keras.Model):
         left_head = self.left_head11(left_head)
 
         return left_head, None, None
+
+class DistanceHeadOnlyModelv2(tf.keras.Model):
+    def __init__(self):
+        super(DistanceHeadOnlyModelv2, self).__init__()
+
+        self.net = tf.keras.applications.MobileNetV3Small(
+            input_shape=(img_height, img_width, 3),
+            include_top=False,
+            weights='imagenet'
+        )
+        self.net.trainable = False
+
+        self.left_head1 = tf.keras.layers.Reshape((16, 16, 576))
+        self.left_head2 = tf.keras.layers.Conv2D(8, (3, 3), padding='same')
+        self.left_head3 = tf.keras.layers.Conv2D(4, (3, 3), padding='same')
+        self.left_head4 = tf.keras.layers.GlobalAveragePooling2D()
+        self.left_head5 = tf.keras.layers.Dense(2, activation='relu')
+        self.left_head6 = tf.keras.layers.Dense(1, activation='linear', name='distance')
+    
+    def call(self, inputs):
+        x = self.net(inputs)
+
+        left_head = self.left_head1(x)
+        left_head = self.left_head2(left_head)
+        left_head = self.left_head3(left_head)
+        left_head = self.left_head4(left_head)
+        left_head = self.left_head5(left_head)
+        left_head = self.left_head6(left_head)
+
+        return left_head, None, None

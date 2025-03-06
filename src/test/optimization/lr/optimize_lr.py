@@ -15,6 +15,7 @@ SAVE RAM.
 # 1 = HACKAI MODEL
 # 2 = HEATMAP MODEL
 # 3 = DISTANCE HEAD ONLY MODEL (v1)
+# 4 = DISTANCE HEAD ONLY MODEL (v2)
 MODE = 3
 
 import os
@@ -150,8 +151,11 @@ elif MODE == 2:
     train_dataset = create_dataset(train_image_paths_distances, train_distances, (train_x_heatmaps, train_y_heatmaps))
     val_dataset = create_dataset(val_image_paths_distances, val_distances, (val_x_heatmaps, val_y_heatmaps))
     test_dataset = create_dataset(test_image_paths_distances, test_distances, (test_x_heatmaps, test_y_heatmaps))
-elif MODE == 3:
-    model = DistanceHeadOnlyModelv1()
+elif MODE == 3 or MODE == 4:
+    if MODE == 3:
+        model = DistanceHeadOnlyModelv1()
+    else:
+        model = DistanceHeadOnlyModelv2()
     loss_object_dist = tf.keras.losses.MeanSquaredError()
     loss_object_x = loss_object_y = None 
 
@@ -163,7 +167,7 @@ elif MODE == 3:
     val_dataset = create_dataset(val_image_paths_distances, val_distances, (val_x_heatmaps, val_y_heatmaps))
     test_dataset = create_dataset(test_image_paths_distances, test_distances, (test_x_heatmaps, test_y_heatmaps))
 else:
-    raise ValueError('MODE value must be integer in range [1, 3].')
+    raise ValueError('MODE value must be integer in range [1, 4].')
 
 @tf.function
 def train_step(model, optimizer, inputs, targets, loss_obj_dist, loss_obj_x=None, loss_obj_y=None):
