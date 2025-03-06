@@ -111,3 +111,43 @@ class HeatmapModel(tf.keras.Model):
         right_head = self.right_head5(right_head)
 
         return left_head, middle_head, right_head
+
+class DistanceHeadOnlyModelv1(tf.keras.Model):
+    def __init__(self):
+        super(DistanceHeadOnlyModelv1, self).__init__()
+
+        self.net = tf.keras.applications.MobileNetV3Small(
+            input_shape=(img_height, img_width, 3),
+            include_top=False,
+            weights='imagenet'
+        )
+        self.net.trainable = False
+
+        self.left_head1 = tf.keras.layers.Reshape((16, 16, 576))
+        self.left_head2 = tf.keras.layers.Conv2D(8, (3, 3), padding='same')
+        self.left_head3 = tf.keras.layers.BatchNormalization()
+        self.left_head4 = tf.keras.layers.PReLU()
+        self.left_head5 = tf.keras.layers.MaxPooling2D((2, 2))
+        self.left_head6 = tf.keras.layers.Conv2D(4, (3, 3), padding='same')
+        self.left_head7 = tf.keras.layers.BatchNormalization()
+        self.left_head8 = tf.keras.layers.PReLU()
+        self.left_head9 = tf.keras.layers.MaxPooling2D((2, 2))
+        self.left_head10 = tf.keras.layers.Flatten()
+        self.left_head11 = tf.keras.layers.Dense(1, activation='relu', name='distance')
+    
+    def call(self, inputs):
+        x = self.net(inputs)
+
+        left_head = self.left_head1(x)
+        left_head = self.left_head2(left_head)
+        left_head = self.left_head3(left_head)
+        left_head = self.left_head4(left_head)
+        left_head = self.left_head5(left_head)
+        left_head = self.left_head6(left_head)
+        left_head = self.left_head7(left_head)
+        left_head = self.left_head8(left_head)
+        left_head = self.left_head9(left_head)
+        left_head = self.left_head10(left_head)
+        left_head = self.left_head11(left_head)
+
+        return left_head, None, None

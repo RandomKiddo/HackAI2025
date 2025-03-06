@@ -14,7 +14,8 @@ SAVE RAM.
 # MODE DEFINES WHICH MODEL
 # 1 = HACKAI MODEL
 # 2 = HEATMAP MODEL
-MODE = 1
+# 3 = DISTANCE HEAD ONLY MODEL (v1)
+MODE = 3
 
 import os
 import random
@@ -149,18 +150,32 @@ elif MODE == 2:
     train_dataset = create_dataset(train_image_paths_distances, train_distances, (train_x_heatmaps, train_y_heatmaps))
     val_dataset = create_dataset(val_image_paths_distances, val_distances, (val_x_heatmaps, val_y_heatmaps))
     test_dataset = create_dataset(test_image_paths_distances, test_distances, (test_x_heatmaps, test_y_heatmaps))
+elif MODE == 3:
+    model = DistanceHeadOnlyModelv1()
+    loss_object_dist = tf.keras.losses.MeanSquaredError()
+    loss_object_x = loss_object_y = None 
+
+    train_x_heatmaps, train_y_heatmaps = convert_labels_to_heatmaps(train_locations[:, 0] * 512, train_locations[:, 1] * 512)
+    val_x_heatmaps, val_y_heatmaps = convert_labels_to_heatmaps(val_locations[:, 0] * 512, val_locations[:, 1] * 512)
+    test_x_heatmaps, test_y_heatmaps = convert_labels_to_heatmaps(test_locations[:, 0] * 512, test_locations[:, 1] * 512)
+
+    train_dataset = create_dataset(train_image_paths_distances, train_distances, (train_x_heatmaps, train_y_heatmaps))
+    val_dataset = create_dataset(val_image_paths_distances, val_distances, (val_x_heatmaps, val_y_heatmaps))
+    test_dataset = create_dataset(test_image_paths_distances, test_distances, (test_x_heatmaps, test_y_heatmaps))
 else:
-    raise ValueError('MODE value must be integer in range [0, 1].')
+    raise ValueError('MODE value must be integer in range [1, 3].')
 
 @tf.function
-def train_step(model, optimizer, inputs, targets, loss_obj_dist, loss_obj_x, loss_obj_y):
+def train_step(model, optimizer, inputs, targets, loss_obj_dist, loss_obj_x=None, loss_obj_y=None):
     with tf.GradientTape() as tape:
         tape.watch(inputs)
 
         l, m, r = model(inputs)
         loss = loss_obj_dist(targets['distance'], l)
-        loss += loss_obj_x(targets['x'], m)
-        loss += loss_obj_y(targets['y'], r)
+        if loss_obj_x is not None:
+            loss += loss_obj_x(targets['x'], m)
+        if loss_obj_y is not None:
+            loss += loss_obj_y(targets['y'], r)
 
     gradients = tape.gradient(loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
