@@ -5,6 +5,7 @@
 
 :heavy_exclamation_mark: ***THIS REPO MAY HAVE BEEN CHANGED OR UPDATED SINCE THE ORIGINAL HACK AI VERSION*** :heavy_exclamation_mark: <br>
 :heavy_exclamation_mark: ***SEE [THE HACK AI RELEASE](https://github.com/RandomKiddo/HackAI2025/releases/tag/hackai2025) FOR THAT VERSION*** :heavy_exclamation_mark:
+:warning: ***SIGNIFICANT CHANGES AND IMPROVEMENTS HAVE BEEN MADE TO THE MODEL, BUT A LOT OF IT HAS BEEN LEFT UNPUBLISHED, AS IT IS PART OF AN UNDER-DEVELOPMENT SYSTEM*** :warning:
 
 ___
 
@@ -40,4 +41,4 @@ ___
 
 [Back to Top](#hackai-2025--iss-ai-docking-locator-and-distance-regressor)
 
-<sub>This page was last edited on 02.23.2025</sub>
+<sub>This page was last edited on 08.25.2025</sub>
